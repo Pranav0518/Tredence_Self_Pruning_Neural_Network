@@ -115,7 +115,7 @@
 
 Let:
 
-
+<\details>
 ---
 
 ## 🏗️ Architecture
