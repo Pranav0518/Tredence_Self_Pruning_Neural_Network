@@ -140,6 +140,7 @@ flowchart LR
 
     K --> L["Output Logits"]
 
+```
 <table align="center">
   <tr><td>PrunableLinear layers</td><td align="right"><b>50</b></td></tr>
   <tr><td>Prunable weights</td><td align="right"><b>57,060,864</b></td></tr>
