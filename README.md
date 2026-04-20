@@ -122,22 +122,28 @@ Let:
 
 ```mermaid
 flowchart LR
-    A["Image<br/>3 × 32 × 32"] --> B["Patchify<br/>64 × 48"]
-    B --> C["PrunableLinear<br/>48 → 768"]
-    C --> D["MixerBlock × 12"]
-    D --> D1["Token-mix MLP<br/>PrunableLinear 64 → 256 → 64"]
-    D --> D2["Channel-mix MLP<br/>PrunableLinear 768 → 3072 → 768"]
-    D1 --> E["LayerNorm +<br/>Global average pool"]
-    D2 --> E
-    E --> F["PrunableLinear<br/>768 → 10"]
-    F --> G["Logits"]
+    A["Image<br/>3 × 32 × 32"] --> B["Conv2D<br/>3 → 32"]
+    B --> C["BatchNorm + ReLU"]
+    C --> D["Residual Block<br/>32 channels"]
+    D --> E["MaxPool<br/>16 × 16"]
+
+    E --> F["Conv2D<br/>32 → 64"]
+    F --> G["BatchNorm + ReLU"]
+    G --> H["Residual Block<br/>64 channels"]
+    H --> I["MaxPool<br/>8 × 8"]
+
+    I --> J["Flatten<br/>4096"]
+
+    J --> K["PrunableLinear<br/>4096 → 512"]
+    K --> L["ReLU + Dropout"]
+    L --> M["PrunableLinear<br/>512 → 10"]
+
+    M --> N["Logits"]
 
     style A fill:#0B2C5A,color:#fff,stroke:#0B2C5A
-    style G fill:#C9A24E,color:#fff,stroke:#C9A24E
-    style C fill:#E9F1FB,color:#0B2C5A
-    style D1 fill:#E9F1FB,color:#0B2C5A
-    style D2 fill:#E9F1FB,color:#0B2C5A
-    style F fill:#E9F1FB,color:#0B2C5A
+    style N fill:#C9A24E,color:#fff,stroke:#C9A24E
+    style K fill:#E9F1FB,color:#0B2C5A
+    style M fill:#E9F1FB,color:#0B2C5A
 ```
 
 <table align="center">
