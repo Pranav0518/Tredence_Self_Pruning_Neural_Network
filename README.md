@@ -42,7 +42,7 @@
 <!--  HERO IMAGE - Pareto frontier                                    -->
 <!-- =============================================================== -->
 <p align="center">
-  <img src="experiments/Accuracy_sparsity_tadeoff.png" width="92%" alt="Accuracy vs sparsity Tradeoff - 84.03% acc at 79.2% sparse, 84.61% at 96.2% sparse, 82.47% at 99.7% sparse."/>
+  <img src="experiments/Accuracy_sparsity_tradeoff.png" width="92%" alt="Accuracy vs sparsity Tradeoff - 84.03% acc at 79.2% sparse, 84.61% at 96.2% sparse, 82.47% at 99.7% sparse."/>
 </p>
 
 ---
