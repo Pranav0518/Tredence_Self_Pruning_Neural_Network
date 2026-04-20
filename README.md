@@ -120,27 +120,26 @@ Let:
 
 ## 🏗️ Architecture
 
-## 🏗️ Architecture
-
 ```mermaid
 flowchart LR
-    A["Image<br/>3 × 32 × 32"] --> B["Conv Block<br/>3 → 32"]
-    B --> C["Residual Block<br/>32"]
-    C --> D["MaxPool"]
+    A["Image<br/>3 × 32 × 32"] --> B["Patchify<br/>64 × 48"]
+    B --> C["PrunableLinear<br/>48 → 768"]
+    C --> D["MixerBlock × 12"]
+    D --> D1["Token-mix MLP<br/>PrunableLinear 64 → 256 → 64"]
+    D --> D2["Channel-mix MLP<br/>PrunableLinear 768 → 3072 → 768"]
+    D1 --> E["LayerNorm +<br/>Global average pool"]
+    D2 --> E
+    E --> F["PrunableLinear<br/>768 → 10"]
+    F --> G["Logits"]
 
-    D --> E["Conv Block<br/>32 → 64"]
-    E --> F["Residual Block<br/>64"]
-    F --> G["MaxPool"]
-
-    G --> H["Flatten<br/>4096"]
-
-    H --> I["PrunableLinear<br/>4096 → 512"]
-    I --> J["ReLU + Dropout"]
-    J --> K["PrunableLinear<br/>512 → 10"]
-
-    K --> L["Output Logits"]
-
+    style A fill:#0B2C5A,color:#fff,stroke:#0B2C5A
+    style G fill:#C9A24E,color:#fff,stroke:#C9A24E
+    style C fill:#E9F1FB,color:#0B2C5A
+    style D1 fill:#E9F1FB,color:#0B2C5A
+    style D2 fill:#E9F1FB,color:#0B2C5A
+    style F fill:#E9F1FB,color:#0B2C5A
 ```
+
 <table align="center">
   <tr><td>PrunableLinear layers</td><td align="right"><b>50</b></td></tr>
   <tr><td>Prunable weights</td><td align="right"><b>57,060,864</b></td></tr>
@@ -431,4 +430,3 @@ sparsity can be interpolated between sweep runs.
 </details>
 
 ---
-
