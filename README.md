@@ -183,7 +183,6 @@ fails to capture spatial structure and typically underperforms.
 
 </details>
 
-<\details>
 ---
 
 ## 🏗️ Architecture
