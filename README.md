@@ -112,27 +112,20 @@
 
 <details>
 <summary><b>🔍 Why L1 on sigmoid gates leads to pruning</b></summary>
-## 🔍 Why L1 on sigmoid gates leads to pruning
 
 Let:
 
-\[
-g = \sigma(s)
-\]
+## g = sigmoid(s)
 
-where \( s \) is the gate score.
+where  s  is the gate score.
 
 The sparsity loss is:
 
-\[
-L_{sp} = \sum_i \sigma(s_i)
-\]
+## L_sp = sum(sigmoid(s_i))
 
 Derivative:
 
-\[
-\frac{\partial L_{sp}}{\partial s_i} = \sigma(s_i)\big(1 - \sigma(s_i)\big)
-\]
+## dL_sp / ds_i = sigmoid(s_i) * (1 - sigmoid(s_i))
 
 ### Interpretation
 
