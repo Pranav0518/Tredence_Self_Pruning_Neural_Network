@@ -400,7 +400,9 @@ At:
 s = 2 → σ(s) ≈ 0.88
 
 the gradient is still sufficiently large, so gates remain trainable.
-<\detail>
+
+</detail>
+
 ---
 <detail>
 ### Why not smaller initialization?
