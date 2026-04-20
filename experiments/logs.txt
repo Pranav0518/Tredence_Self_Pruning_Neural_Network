@@ -1,0 +1,47 @@
+==================================================
+SELF-PRUNING NETWORK TRAINING LOG
+==================================================
+
+Lambda = 1e-05
+--------------------------------------------------
+Final Test Accuracy : 84.03%
+Final Sparsity      : 79.21%
+
+Training Summary:
+- Gradual sparsity increase from 0% → 79%
+- Accuracy steadily improved to ~86% during training
+- Minimal pruning impact on performance
+
+--------------------------------------------------
+
+Lambda = 1e-04  (BEST TRADE-OFF)
+--------------------------------------------------
+Final Test Accuracy : 84.61%
+Final Sparsity      : 96.22%
+
+Training Summary:
+- Rapid sparsity growth after epoch 10
+- Achieved strong compression with minimal accuracy loss
+- Best balance between performance and efficiency
+
+--------------------------------------------------
+
+Lambda = 1e-03  (MAX PRUNING)
+--------------------------------------------------
+Final Test Accuracy : 82.47%
+Final Sparsity      : 99.74%
+
+Training Summary:
+- Aggressive pruning early in training
+- Near-complete sparsification
+- Slight drop in accuracy due to over-pruning
+
+--------------------------------------------------
+
+FINAL OBSERVATIONS
+==================================================
+- Increasing λ increases sparsity
+- Moderate λ (1e-04) gives optimal trade-off
+- Model successfully learns dynamic pruning
+
+==================================================

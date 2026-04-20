@@ -1,0 +1,4 @@
+self_pruning/
+__pycache__/
+*.pyc
+data/
