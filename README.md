@@ -405,11 +405,11 @@ the gradient is still sufficiently large, so gates remain trainable.
 
 ---
 <detail>
-### Why not smaller initialization?
+Why not smaller initialization?
 If initialized too low (e.g., σ ≈ 0.01):
 Gates start near zero → already pruned, Gradient becomes very small, Learning becomes ineffective, Benefit of current initialization, Starts with most weights active, Allows the model to learn which weights to remove, Maintains strong gradient flow during early training
 </details>
-  
+---
 <details> <summary><b>4. λ calibration — intuition</b></summary>
 
 Total loss:
@@ -424,7 +424,7 @@ Empirical behavior
 - 1e-4	Best balance
 - 1e-3	Extreme pruning
  
-### Insight:
+Insight:
 λ controls pressure toward sparsity, not exact sparsity level
 Increasing λ gradually reveals the full accuracy–sparsity trade-off
 </details>
