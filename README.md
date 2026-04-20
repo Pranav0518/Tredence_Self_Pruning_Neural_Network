@@ -208,16 +208,15 @@ flowchart LR
 ```
 
 <table align="center">
-  <tr><td>PrunableLinear layers</td><td align="right"><b>50</b></td></tr>
-  <tr><td>Prunable weights</td><td align="right"><b>57,060,864</b></td></tr>
-  <tr><td>Gate parameters (one per weight)</td><td align="right"><b>57,060,864</b></td></tr>
-  <tr><td>Total parameters</td><td align="right"><b>114,210,826</b></td></tr>
-  <tr><td>Dense model (fp32)</td><td align="right"><b>435.7 MB</b></td></tr>
-  <tr><td>Convolutions / attention</td><td align="right"><b>0 / 0</b></td></tr>
+  <tr><td>Backbone</td><td align="right"><b>CNN + Residual Blocks</b></td></tr>
+  <tr><td>PrunableLinear layers</td><td align="right"><b>2</b></td></tr>
+  <tr><td>Prunable weights</td><td align="right"><b>Fully connected layers only</b></td></tr>
+  <tr><td>Gate parameters</td><td align="right"><b>One per weight</b></td></tr>
+  <tr><td>Pruning type</td><td align="right"><b>Unstructured (weight-level)</b></td></tr>
+  <tr><td>Convolutions</td><td align="right"><b>Used for feature extraction</b></td></tr>
 </table>
 
 <details>
-<summary><b>📐 <code>PrunableLinear</code> — the primitive</b></summary>
 
 ```python
 class PrunableLinear(nn.Module):
