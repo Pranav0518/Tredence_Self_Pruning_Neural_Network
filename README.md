@@ -139,7 +139,6 @@ flowchart LR
     J --> K["PrunableLinear<br/>512 → 10"]
 
     K --> L["Output Logits"]
-```
 
 <table align="center">
   <tr><td>PrunableLinear layers</td><td align="right"><b>50</b></td></tr>
@@ -169,8 +168,8 @@ class PrunableLinear(nn.Module):
 
     def sparsity_loss(self):
         return torch.sigmoid(self.gate_scores).sum()                # L1 on σ(s)
-
 ```
+
 Gradients flow through **both** `weight` and `gate_scores` via ordinary
 autograd; no straight-through estimator is needed because `σ` is everywhere
 differentiable.
@@ -180,7 +179,6 @@ differentiable.
 ---
 
 ## ⚙️ Training Protocol
-
 
 <table>
   <tr>
@@ -219,6 +217,215 @@ The code is fully environment-agnostic:
   sweep in ~42 min.
 - T4 / RTX-3060 → just set `cfg.batch_size = 128`, `cfg.use_amp = False`
   and everything else runs unchanged.
+
+</details>
+
+---
+
+## 📊 Results
+
+### Headline numbers
+
+<p align="center">
+  <img src="figures/fig3_accuracy_vs_sparsity.png" width="78%" alt="Accuracy vs sparsity Pareto"/>
+</p>
+
+Every λ produces a *distinct, useful* operating point:
+
+| Operating point | Best for |
+|---|---|
+| `λ = 1e-7` → **83.86 %** @ 20 % sparse | **Quality-first**: best accuracy with light cleanup. |
+| `λ = 1e-6` → **82.21 %** @ **88.9 %** sparse (**9.01×**) | **The sweet spot**: virtually all the accuracy of the best model in a 9× smaller network. |
+| `λ = 1e-5` → **76.18 %** @ **99.24 %** sparse (**128.57×**) | **Extreme compression**: 435 MB → **1.69 MB**, still well above chance. |
+
+### ✅ Automatic sanity checks (all required)
+
+| # | Status | Assertion |
+|---|:---:|---|
+| 1 | ✅ **PASS** | Sparsity spans a non-trivial range: 20 %, 89 %, 99 %. |
+| 2 | ✅ **PASS** | Sparsity is (approximately) monotonic in λ. |
+| 3 | ✅ **PASS** | Test accuracies are non-trivial at every λ: 83.9 %, 82.2 %, 76.2 %. |
+| 4 | ✅ **PASS** | Hard-pruning drop is ≤ 0.07 % → **sparsity is real compression**. |
+
+### 🔬 Hard-prune verification
+
+After training, for each checkpoint we physically set every weight whose gate
+is below 1e-2 to **literal zero** and re-run CIFAR-10 test. A negligible
+accuracy change across all three runs means **the gates are a genuine
+importance oracle** — not just shrinking all weights uniformly.
+
+---
+
+## 🖼️ Figures
+
+<details open>
+<summary><b>Required brief figure — final gate histogram of the best model</b></summary>
+
+<p align="center"><img src="figures/fig_required_gate_distribution.png" width="80%"/></p>
+
+A successful run produces exactly the bimodal distribution the brief
+anticipates: a tall spike below the pruning threshold (pruned weights) and a
+thin survivor tail above.
+
+</details>
+
+<details>
+<summary><b>Training dynamics across the three λ</b></summary>
+
+<p align="center"><img src="figures/fig1_training_curves.png" width="92%"/></p>
+
+Sparsity is pinned at 0 during the 5-epoch CE-only warm-up, climbs smoothly
+during the 5-epoch λ ramp, then stabilises for the remaining 90 epochs.
+
+</details>
+
+<details>
+<summary><b>Per-layer sparsity across all 50 <code>PrunableLinear</code> layers</b></summary>
+
+<p align="center"><img src="figures/fig2_per_layer_sparsity.png" width="92%"/></p>
+</details>
+
+<details>
+<summary><b>Per-path sparsity — where does the Mixer actually prune?</b></summary>
+
+<p align="center"><img src="figures/fig8_per_path_sparsity.png" width="80%"/></p>
+
+**Channel-mixing MLPs carry almost all the redundancy** (89.5 % at λ=1e-6,
+99.5 % at λ=1e-5). The patch embedder and the classifier stay essentially
+dense — a direct, emergent consequence of the Mixer inductive bias.
+
+</details>
+
+<details>
+<summary><b>Progressive-threshold Pareto — full operating curve</b></summary>
+
+<p align="center"><img src="figures/fig7_threshold_curve.png" width="92%"/></p>
+
+The λ = 1e-6 curve is *flat* from threshold 1e-3 up to ~5e-2 — the pruning
+decision is robust to the choice of threshold, not a knife-edge.
+
+</details>
+
+<details>
+<summary><b>Weight × gate joint distribution</b></summary>
+
+<p align="center"><img src="figures/fig5_weight_vs_gate.png" width="80%"/></p>
+
+Gates don't merely copy weight magnitude — the network assigns importance
+jointly through training.
+
+</details>
+
+<details>
+<summary><b>Gate histograms for all three λ</b></summary>
+
+<p align="center"><img src="figures/fig4_gate_distribution_all_lambdas.png" width="92%"/></p>
+
+Higher λ pushes more mass into the zero bin while leaving a thin
+survivor tail — precisely the dynamic the L1 regulariser is designed to
+produce.
+
+</details>
+
+<details>
+<summary><b>Engineering throughput</b></summary>
+
+<p align="center"><img src="figures/fig6_throughput.png" width="92%"/></p>
+
+Average throughput across the three runs: **~6,400 samples/second** on a
+single H100 80 GB.
+
+</details>
+
+<details>
+<summary><b>✨ NEW — Structured vs unstructured sparsity (dense-GEMM FLOP savings)</b></summary>
+
+<p align="center"><img src="figures/fig9_structured_sparsity.png" width="92%"/></p>
+
+The headline sparsity is **unstructured** — it counts individual pruned
+weights. The post-hoc analysis in
+[`analyze_structured_sparsity.py`](analyze_structured_sparsity.py) measures
+what fraction of **entire output rows** and **entire input columns** have
+*all* their gates pruned — those rows/columns can be physically deleted
+from `W`, shrinking the matmul dimensions with no sparse kernel required.
+
+| λ     | unstructured | row sparsity | col sparsity | **dense-GEMM FLOP savings** |
+|:-----:|:------------:|:------------:|:------------:|:---------------------------:|
+| 1e-07 | 20.02 %      | 0 %          | 0 %          | 0 %                         |
+| 1e-06 | 88.90 %      | 42.02 %      | 43.49 %      | **57.77 %**                 |
+| 1e-05 | 99.22 %      | 80.48 %      | 78.68 %      | **92.22 %**                 |
+
+**The gate mechanism discovers structure on its own** — we never added a
+group-lasso or a row-wise penalty, yet entire neurons drop out. Full
+discussion in [CASE_STUDY.md §3.8](CASE_STUDY.md#38-structured-vs-unstructured-sparsity).
+
+</details>
+
+---
+
+## 🧠 Deep Analysis
+
+<details>
+<summary><b>1. Hard-prune drop ≤ 0.07 % — why this is the punchline</b></summary>
+
+If the gates were just *shrinking* weight magnitudes uniformly, hard
+pruning would crater the model. In this sweep:
+
+- λ = 1e-7 → −0.03 % drop
+- λ = 1e-6 → −0.03 % drop *(negative: the model is marginally better hard-pruned)*
+- λ = 1e-5 → +0.07 % drop
+
+That ~zero drop means the gates are a **discrete importance classifier**
+inside a smooth optimiser — exactly the behaviour the brief is probing for.
+
+</details>
+
+<details>
+<summary><b>2. Per-path redundancy is <i>not</i> uniform</b></summary>
+
+|            | λ = 1e-7 | λ = 1e-6 | λ = 1e-5 |
+|------------|:-------:|:-------:|:-------:|
+| patch_embed | 0.00 % | 0.11 % | 3.16 %  |
+| token_mix   | 0.14 % | 17.72 % | 66.02 % |
+| **channel_mix** | **20.17 %** | **89.47 %** | **99.53 %** |
+| classifier  | 0.00 % | 0.00 % | 3.32 %  |
+
+The network learns — without being told — that channel-mixing is massively
+over-parameterised for 10-class CIFAR, while patchification and the final
+logit layer are near-irreducible. A flat MLP can't produce this story.
+
+</details>
+
+<details>
+<summary><b>3. Why <code>gate_init = −2.0</code> (and not deeper)</b></summary>
+
+`σ′(s) = σ(s)·(1 − σ(s))`, peaking at `s = 0`. At `s = −2` we have
+`σ′ ≈ 0.105`. A naive init at `σ(−6) ≈ 0.0025` would collapse the
+gate-gradient pathway by ~100×, effectively disabling the learnable
+mechanism regardless of λ. `−2` keeps gates **responsive from step zero**
+while sitting above the 1e-2 pruning threshold.
+
+</details>
+
+<details>
+<summary><b>4. λ calibration — back-of-envelope</b></summary>
+
+With 57 M gates at initial value ≈ 0.12, the sparsity term starts at roughly
+`ℒ_sp ≈ 6.85 × 10⁶` against `ℒ_CE ≈ ln 10 ≈ 2.30`. The sweep
+`[1e-7, 1e-6, 1e-5]` moves `λ · ℒ_sp` at init from *subcritical* to
+*at-par* to *supercritical* — exactly the range needed to expose the full
+Pareto front without collapsing either end.
+
+</details>
+
+<details>
+<summary><b>5. L1 on <code>σ(g)</code> vs. exact L0</b></summary>
+
+Exact L0 pruning is NP-hard and non-differentiable. `L1(σ(g))` is the
+standard smooth proxy, giving Lasso-style soft-thresholding in gate space.
+The trade-off: λ doesn't specify a target sparsity directly, it specifies
+**pressure**. Empirically the sparsity response is monotone, so any target
+sparsity can be interpolated between sweep runs.
 
 </details>
 
