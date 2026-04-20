@@ -114,33 +114,35 @@
 <summary><b>🔍 Why L1 on sigmoid gates leads to pruning</b></summary>
 
 Let:
-g = σ(s)
 
+\[
+g = \sigma(s)
+\]
 
-where `s` is the gate score.
+where \( s \) is the gate score.
 
 The sparsity loss is:
 
-
-L_sp = Σ σ(sᵢ)
-
+\[
+L_{sp} = \sum_i \sigma(s_i)
+\]
 
 Derivative:
 
+\[
+\frac{\partial L_{sp}}{\partial s_i} = \sigma(s_i)\big(1 - \sigma(s_i)\big)
+\]
 
-∂L_sp / ∂sᵢ = σ(sᵢ)(1 − σ(sᵢ))
+### Interpretation
 
-
-### Interpretation:
-
-- This gradient pushes gate scores downward
+- This gradient pushes gate scores downward  
 - For unimportant weights:
-  - Classification loss gradient is weak
-  - Sparsity term dominates → gates → 0
+  - Classification loss gradient is weak  
+  - Sparsity term dominates → gates → 0  
 - For important weights:
-  - Classification gradient keeps gates active
+  - Classification gradient keeps gates active  
 
-### Result:
+### Result
 
 - Gates naturally split into:
   - ~0 → pruned weights  
@@ -157,18 +159,18 @@ Derivative:
 
 A simple fully connected network on flattened CIFAR-10 images:
 
-
-3 × 32 × 32 = 3072 features
-
+\[
+3 \times 32 \times 32 = 3072 \text{ features}
+\]
 
 fails to capture spatial structure and typically underperforms.
 
-### Our approach:
+### Our Approach
 
-- Use a **CNN backbone** for feature extraction
+- Use a **CNN backbone** for feature extraction  
 - Apply pruning only in **fully connected layers**
 
-### Benefits:
+### Benefits
 
 - CNN preserves spatial information → higher accuracy  
 - Prunable layers learn redundancy → sparsity  
@@ -176,10 +178,10 @@ fails to capture spatial structure and typically underperforms.
   - Strong performance (~84%)  
   - High compression (~99% sparsity)
 
-### Insight:
+### Key Insight
 
 - Most redundancy lies in **dense layers**, not convolutional layers  
-- This validates applying pruning selectively
+- This validates applying pruning selectively  
 
 </details>
 
