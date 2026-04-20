@@ -112,6 +112,7 @@
 
 <details>
 <summary><b>🔍 Why L1 on sigmoid gates leads to pruning</b></summary>
+## 🔍 Why L1 on sigmoid gates leads to pruning
 
 Let:
 
@@ -150,12 +151,9 @@ Derivative:
 
 👉 This creates **automatic sparsity during training**
 
-</details>
-
 ---
 
-<details>
-<summary><b>🧠 Why CNN + PrunableLinear (and not plain MLP)</b></summary>
+## 🧠 Why CNN + PrunableLinear (and not plain MLP)
 
 A simple fully connected network on flattened CIFAR-10 images:
 
@@ -174,14 +172,15 @@ fails to capture spatial structure and typically underperforms.
 
 - CNN preserves spatial information → higher accuracy  
 - Prunable layers learn redundancy → sparsity  
-- Achieves both:
-  - Strong performance (~84%)  
-  - High compression (~99% sparsity)
+
+Achieves both:
+- Strong performance (~84%)  
+- High compression (~99% sparsity)
 
 ### Key Insight
 
 - Most redundancy lies in **dense layers**, not convolutional layers  
-- This validates applying pruning selectively  
+- This validates applying pruning selectively    
 
 </details>
 
