@@ -47,7 +47,7 @@
 
 ---
 
-## ⚡ TL;DR
+## TL;DR
 
 > A **CNN-based image classifier on CIFAR-10** where every fully connected
 > layer is replaced with a custom **`PrunableLinear`** module.
