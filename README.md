@@ -404,22 +404,17 @@ the gradient is still sufficiently large, so gates remain trainable.
 <detail>
 ### Why not smaller initialization?
 If initialized too low (e.g., σ ≈ 0.01):
-- Gates start near zero → already pruned
-- Gradient becomes very small
-- Learning becomes ineffective
-- Benefit of current initialization
-- Starts with most weights active
-- Allows the model to learn which weights to remove
-- Maintains strong gradient flow during early training
+Gates start near zero → already pruned, Gradient becomes very small, Learning becomes ineffective, Benefit of current initialization, Starts with most weights active, Allows the model to learn which weights to remove, Maintains strong gradient flow during early training
 </details>
+  
 <details> <summary><b>4. λ calibration — intuition</b></summary>
 
 Total loss:
-- L = CE + λ · Σ σ(gate_scores)
+L = CE + λ · Σ σ(gate_scores)
   
 Understanding λ
-- Small λ → sparsity term is weak → accuracy dominates
-- Large λ → sparsity term is strong → aggressive pruning
+Small λ → sparsity term is weak → accuracy dominates
+Large λ → sparsity term is strong → aggressive pruning
 Empirical behavior
 λ	Effect
 - 1e-5	Moderate pruning
@@ -427,26 +422,27 @@ Empirical behavior
 - 1e-3	Extreme pruning
  
 ### Insight:
-- λ controls pressure toward sparsity, not exact sparsity level
-- Increasing λ gradually reveals the full accuracy–sparsity trade-off
+λ controls pressure toward sparsity, not exact sparsity level
+Increasing λ gradually reveals the full accuracy–sparsity trade-off
 </details>
 
 <details> <summary><b>5. L1 on <code>σ(g)</code> vs exact L0 pruning</b></summary>
-- Exact L0 pruning
-- Non-differentiable
-- Computationally intractable
-- Practical alternative
-- L_sp = Σ σ(gate_scores)
-- Advantages
-- Fully differentiable
-- Works with standard gradient descent
-- Encourages sparsity naturally
-- Trade-off
-- Produces soft sparsity, not exact zeros
-- Requires thresholding (e.g., σ(g) < 0.01)
-- Key insight
-- λ controls the strength of sparsity pressure
-- Sparsity increases smoothly and predictably
+
+Exact L0 pruning
+Non-differentiable
+Computationally intractable
+Practical alternative
+L_sp = Σ σ(gate_scores)
+Advantages
+Fully differentiable
+Works with standard gradient descent
+Encourages sparsity naturally
+Trade-off
+Produces soft sparsity, not exact zeros
+Requires thresholding (e.g., σ(g) < 0.01)
+Key insight
+λ controls the strength of sparsity pressure
+Sparsity increases smoothly and predictably
 
 👉 This makes L1 on sigmoid gates a strong and practical approximation to L0 pruning
 
