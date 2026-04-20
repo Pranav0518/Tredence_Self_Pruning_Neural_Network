@@ -114,6 +114,74 @@
 <summary><b>🔍 Why L1 on sigmoid gates leads to pruning</b></summary>
 
 Let:
+g = σ(s)
+
+
+where `s` is the gate score.
+
+The sparsity loss is:
+
+
+L_sp = Σ σ(sᵢ)
+
+
+Derivative:
+
+
+∂L_sp / ∂sᵢ = σ(sᵢ)(1 − σ(sᵢ))
+
+
+### Interpretation:
+
+- This gradient pushes gate scores downward
+- For unimportant weights:
+  - Classification loss gradient is weak
+  - Sparsity term dominates → gates → 0
+- For important weights:
+  - Classification gradient keeps gates active
+
+### Result:
+
+- Gates naturally split into:
+  - ~0 → pruned weights  
+  - ~1 → important weights  
+
+👉 This creates **automatic sparsity during training**
+
+</details>
+
+---
+
+<details>
+<summary><b>🧠 Why CNN + PrunableLinear (and not plain MLP)</b></summary>
+
+A simple fully connected network on flattened CIFAR-10 images:
+
+
+3 × 32 × 32 = 3072 features
+
+
+fails to capture spatial structure and typically underperforms.
+
+### Our approach:
+
+- Use a **CNN backbone** for feature extraction
+- Apply pruning only in **fully connected layers**
+
+### Benefits:
+
+- CNN preserves spatial information → higher accuracy  
+- Prunable layers learn redundancy → sparsity  
+- Achieves both:
+  - Strong performance (~84%)  
+  - High compression (~99% sparsity)
+
+### Insight:
+
+- Most redundancy lies in **dense layers**, not convolutional layers  
+- This validates applying pruning selectively
+
+</details>
 
 <\details>
 ---
